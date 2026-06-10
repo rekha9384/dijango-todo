@@ -1,0 +1,88 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'todo/style.css' %}">
+
+<div style="text-align:right; margin:10px;">
+    👤 Welcome {{ request.user.username }} |
+    <a href="{% url 'logout' %}">Logout</a>
+</div>
+
+<h1>📝 My To-Do List</h1>
+
+<!-- 🔍 SEARCH -->
+<form method="GET">
+  <input type="text" name="q" placeholder="Search task">
+  <button type="submit">Search</button>
+</form>
+
+<!-- 🎯 FILTER -->
+<div style="margin:10px;">
+  <a href="?filter=all">All</a> |
+  <a href="?filter=completed">Completed</a> |
+  <a href="?filter=pending">Pending</a>
+</div>
+<!-- ⭐ PRIORITY FILTER -->
+<div style="margin:10px;">
+  <strong>Priority:</strong>
+  <a href="?priority=H">🔴 High</a> |
+  <a href="?priority=M">🟡 Medium</a> |
+  <a href="?priority=L">🟢 Low</a>
+</div>
+
+<!-- ➕ ADD TASK -->
+<form method="POST">
+  {% csrf_token %}
+  <input type="text" name="title" placeholder="Enter task" required>
+
+  <!-- ⭐ PRIORITY DROPDOWN -->
+  <select name="priority">
+    <option value="H">🔴 High</option>
+    <option value="M" selected>🟡 Medium</option>
+    <option value="L">🟢 Low</option>
+  </select>
+
+  <button type="submit">Add Task</button>
+</form>
+
+<hr>
+
+<ul>
+  {% for task in tasks %}
+    <li style="margin:10px 0;">
+
+      <!-- 📌 TITLE -->
+      <strong>{{ task.title }}</strong>
+
+      <!-- 🎯 PRIORITY -->
+      {% if task.priority == 'H' %}
+        <span style="color:red;">🔴 High</span>
+      {% elif task.priority == 'M' %}
+        <span style="color:orange;">🟡 Medium</span>
+      {% else %}
+        <span style="color:green;">🟢 Low</span>
+      {% endif %}
+
+      <!-- ✅ STATUS -->
+      {% if task.completed %}
+        <span style="color:green;">✔ Completed</span>
+      {% else %}
+        <span style="color:red;">✘ Pending</span>
+      {% endif %}
+
+      <!-- ⏱️ TIME -->
+      {% if task.created_at %}
+        <small> ({{ task.created_at }}) </small>
+      {% endif %}
+
+      <br>
+
+      <!-- ⚙️ ACTIONS -->
+      <a href="{% url 'complete' task.id %}">✔️</a>
+      <a href="{% url 'edit' task.id %}">✏️</a>
+      <a href="{% url 'delete' task.id %}" onclick="return confirm('Are you sure to delete?')">❌</a>
+
+    </li>
+
+  {% empty %}
+    <p>No tasks found 😢</p>
+  {% endfor %}
+</ul>
